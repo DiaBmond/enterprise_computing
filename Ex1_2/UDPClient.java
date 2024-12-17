@@ -4,24 +4,22 @@ import java.net.*;
 
 public class UDPClient {
     public static void main(String[] args) {
-        String serverHost = "localhost";
-        int serverPort = 12345;
+        String host = "localhost";
+        int port = 1668;
 
-        try (DatagramSocket clientSocket = new DatagramSocket()) {
-            // Send an empty message to the server
-            byte[] sendBuffer = new byte[1];
-            InetAddress serverAddress = InetAddress.getByName(serverHost);
-            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverAddress, serverPort);
-            clientSocket.send(sendPacket);
+        try (DatagramSocket socket = new DatagramSocket()) {
+            InetAddress serverAddress = InetAddress.getByName(host);
+            byte[] requestBytes = "Request Date and Time".getBytes();
 
-            // Receive the server's response
-            byte[] receiveBuffer = new byte[1024];
-            DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
-            clientSocket.receive(receivePacket);
+            DatagramPacket requestPacket = new DatagramPacket(requestBytes, requestBytes.length, serverAddress, port);
+            socket.send(requestPacket);
 
-            // Print the response
-            String serverTime = new String(receivePacket.getData(), 0, receivePacket.getLength());
-            System.out.println("Server's date and time: " + serverTime);
+            byte[] responseBuffer = new byte[1024];
+            DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length);
+            socket.receive(responsePacket);
+
+            String serverResponse = new String(responsePacket.getData(), 0, responsePacket.getLength());
+            System.out.println("Server Date and Time: " + serverResponse);
         } catch (Exception e) {
             e.printStackTrace();
         }

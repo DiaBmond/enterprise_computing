@@ -8,32 +8,17 @@ public class TCPClient {
         String host = "localhost";
         int port = 1667;
 
-        try (Socket socket = new Socket(host, port)) {
-            BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+        try (Socket socket = new Socket(host, port);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in))) {
+            String serverResponse;
+            while ((serverResponse = in.readLine()) != null) {
+                System.out.println(serverResponse);
+                String userInput = consoleInput.readLine();
+                out.println(userInput);
 
-            String serverMessage;
-
-            while (true) {
-                // Read message from server
-                serverMessage = input.readLine();
-                if (serverMessage == null)
-                    break;
-                System.out.print(serverMessage + " ");
-
-                // Send user input to server
-                String userInput = console.readLine();
-                output.println(userInput);
-
-                // Read and display the server response
-                serverMessage = input.readLine();
-                if (serverMessage == null)
-                    break;
-                System.out.println(serverMessage);
-
-                // If the connection is closed
-                if (serverMessage.contains("Connection closed")) {
+                if (userInput == null || userInput.isEmpty()) {
                     break;
                 }
             }

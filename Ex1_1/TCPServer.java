@@ -5,16 +5,13 @@ import java.net.*;
 
 public class TCPServer {
     public static void main(String[] args) {
-        int port = 1667; // Server port
-        System.out.println("Server waiting for client connection at port number " + port);
-
+        int port = 1667;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            while (true) {
-                // Accept client connection
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket);
+            System.out.println("Waiting for client connection at port number " + port);
 
-                // Handle client connection in a new thread
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected.");
                 new Thread(new ClientHandler(clientSocket)).start();
             }
         } catch (IOException e) {
@@ -33,39 +30,28 @@ class ClientHandler implements Runnable {
     @Override
     public void run() {
         try (
-                BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter output = new PrintWriter(clientSocket.getOutputStream(), true)) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
             while (true) {
-                // Prompt for the first number
-                output.println("enter number 1 (to end just press enter): ");
-                String number1 = input.readLine();
-
-                // If the client presses enter without entering a number
-                if (number1 == null || number1.trim().isEmpty()) {
-                    output.println("Connection closed.");
+                out.println("Enter number 1 (to end just press enter):");
+                String input1 = in.readLine();
+                if (input1 == null || input1.isEmpty()) {
                     break;
                 }
 
-                // Prompt for the second number
-                output.println("enter number 2 (to end just press enter): ");
-                String number2 = input.readLine();
-
-                // If the client presses enter without entering a number
-                if (number2 == null || number2.trim().isEmpty()) {
-                    output.println("Connection closed.");
+                out.println("Enter number 2 (to end just press enter):");
+                String input2 = in.readLine();
+                if (input2 == null || input2.isEmpty()) {
                     break;
                 }
 
-                // Convert numbers and calculate the sum
                 try {
-                    int num1 = Integer.parseInt(number1.trim());
-                    int num2 = Integer.parseInt(number2.trim());
-                    int sum = num1 + num2;
-
-                    // Send result back to the client
-                    output.println("The result is " + sum);
+                    int num1 = Integer.parseInt(input1);
+                    int num2 = Integer.parseInt(input2);
+                    int result = num1 + num2;
+                    out.println("The result is " + result);
                 } catch (NumberFormatException e) {
-                    output.println("Invalid input. Please enter valid numbers.");
+                    out.println("Invalid input. Please enter valid numbers.");
                 }
             }
         } catch (IOException e) {
@@ -73,10 +59,10 @@ class ClientHandler implements Runnable {
         } finally {
             try {
                 clientSocket.close();
+                System.out.println("Client disconnected.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println("Client disconnected: " + clientSocket);
         }
     }
 }

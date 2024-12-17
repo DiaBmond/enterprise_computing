@@ -6,30 +6,28 @@ import java.util.Date;
 
 public class UDPServer {
     public static void main(String[] args) {
-        int port = 12345;
+        int port = 1668;
 
-        try (DatagramSocket serverSocket = new DatagramSocket(port)) {
-            System.out.println("UDP Server is running on port " + port);
+        try (DatagramSocket socket = new DatagramSocket(port)) {
+            System.out.println("UDP Server is running at port " + port);
 
-            byte[] receiveBuffer = new byte[1024];
-            byte[] sendBuffer;
+            byte[] buffer = new byte[1024];
 
             while (true) {
-                // Receive client request
-                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
-                serverSocket.receive(receivePacket);
-                System.out.println("Request received from: " + receivePacket.getAddress());
+                DatagramPacket requestPacket = new DatagramPacket(buffer, buffer.length);
+                socket.receive(requestPacket);
 
-                // Generate current date and time
+                InetAddress clientAddress = requestPacket.getAddress();
+                int clientPort = requestPacket.getPort();
+
                 String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-                sendBuffer = currentTime.getBytes();
+                byte[] responseBytes = currentTime.getBytes();
 
-                // Send the response back to the client
-                InetAddress clientAddress = receivePacket.getAddress();
-                int clientPort = receivePacket.getPort();
-                DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress,
+                DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, clientAddress,
                         clientPort);
-                serverSocket.send(sendPacket);
+                socket.send(responsePacket);
+
+                System.out.println("Sent current time to client: " + currentTime);
             }
         } catch (Exception e) {
             e.printStackTrace();
